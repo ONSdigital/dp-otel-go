@@ -4,22 +4,23 @@ import (
 	"context"
 	"errors"
 	"os"
-	
+	"time"
 
 	"go.opentelemetry.io/contrib/propagators/autoprop"
-
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/sdk/resource"
 	"go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
-	"go.opentelemetry.io/contrib/propagators/aws/xray"
+	"go.opentelemetry.io/contrib/propagators/aws/xray"	
 )
 
 // setupOTelSDK bootstraps the OpenTelemetry pipeline.
 // If it does not return an error, make sure to call shutdown for proper cleanup.
-func SetupOTelSDK(ctx context.Context, serviceName, serviceVersion string) (shutdown func(context.Context) error, err error) {
+func SetupOTelSDK(ctx context.Context) (shutdown func(context.Context) error, err error) {
 	var shutdownFuncs []func(context.Context) error
+
+	serviceName :=os.Getenv("OTEL_SERVICE_NAME")
 
 	// shutdown calls cleanup functions registered via shutdownFuncs.
 	// The errors from the calls are joined.
@@ -39,7 +40,7 @@ func SetupOTelSDK(ctx context.Context, serviceName, serviceVersion string) (shut
 	}
 
 	// Setup resource.
-	res, err := newResource(serviceName, serviceVersion)
+	res, err := newResource(serviceName)
 	if err != nil {
 		handleErr(err)
 		return
@@ -58,26 +59,36 @@ func SetupOTelSDK(ctx context.Context, serviceName, serviceVersion string) (shut
 	return
 }
 
-func newResource(serviceName, serviceVersion string) (*resource.Resource, error) {
+
+//TODO this is the place to pass extra information back to the tracing tool. Implement a mechanism
+// to pass arbitrary information from the service, also identify any AWS info to pass back (ec2 etc)
+func newResource(serviceName string) (*resource.Resource, error) {
 	return resource.Merge(resource.Default(),
 		resource.NewWithAttributes(semconv.SchemaURL,
 			semconv.ServiceName(serviceName),
-			semconv.ServiceVersion(serviceVersion),
 		))
 }
 
 func newTraceProvider(ctx context.Context, res *resource.Resource) (*trace.TracerProvider, error) {
+	// TODO can be done using env vars for gRPC?
+	// tlsCreds, err := credentials.NewClientTLSFromFile("../CA/cert.pem","")
+	// if err != nil {
+	// 	return nil, err
+	// }
 	traceExporter, err := otlptracegrpc.New(ctx,
-		otlptracegrpc.WithEndpoint(os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT")), otlptracegrpc.WithInsecure())
-	if err != nil {
+		otlptracegrpc.WithEndpoint(os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT")),
+		// otlptracegrpc.WithTLSCredentials(tlsCreds))
+		  otlptracegrpc.WithInsecure())
+	// )
+	if err != nil {t5 bv
 		return nil, err
 	}
 
 	traceProvider := trace.NewTracerProvider(
 		trace.WithBatcher(traceExporter,
 			// Default is 5s. Set to 1s for demonstrative purposes.
-		//	trace.WithBatchTimeout(time.SECOND)
-		),
+			trace.WithBatchTimeout(time.Second)),
+		// ),
 		trace.WithResource(res),
 		trace.WithIDGenerator(xray.NewIDGenerator()),
 	)
