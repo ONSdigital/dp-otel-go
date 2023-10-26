@@ -70,17 +70,10 @@ func newResource(serviceName string) (*resource.Resource, error) {
 }
 
 func newTraceProvider(ctx context.Context, res *resource.Resource) (*trace.TracerProvider, error) {
-	// TODO can be done using env vars for gRPC?
-	// tlsCreds, err := credentials.NewClientTLSFromFile("../CA/cert.pem","")
-	// if err != nil {
-	// 	return nil, err
-	// }
+
 	traceExporter, err := otlptracegrpc.New(ctx,
-		otlptracegrpc.WithEndpoint(os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT")),
-		// otlptracegrpc.WithTLSCredentials(tlsCreds))
-		  otlptracegrpc.WithInsecure())
-	// )
-	if err != nil {t5 bv
+		otlptracegrpc.WithEndpoint(os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT")))
+	if err != nil {
 		return nil, err
 	}
 
