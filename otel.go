@@ -72,7 +72,7 @@ func newResource(serviceName string) (*resource.Resource, error) {
 func newTraceProvider(ctx context.Context, res *resource.Resource) (*trace.TracerProvider, error) {
 
 	traceExporter, err := otlptracegrpc.New(ctx,
-		otlptracegrpc.WithEndpoint(os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT")))
+		otlptracegrpc.WithEndpoint(os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT")), otlptracegrpc.WithInsecure())
 	if err != nil {
 		return nil, err
 	}
