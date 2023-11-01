@@ -6,13 +6,18 @@ import (
 	"os"
 	"time"
 
+	"net/http"
+
 	"go.opentelemetry.io/contrib/propagators/autoprop"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/sdk/resource"
-	"go.opentelemetry.io/otel/sdk/trace"
+	"go.opentelemetry.io/otel/trace"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
-	"go.opentelemetry.io/contrib/propagators/aws/xray"	
+	"go.opentelemetry.io/contrib/propagators/aws/xray"
+	"github.com/ONSdigital/dp-net/v2/request"
+	
 )
 
 // setupOTelSDK bootstraps the OpenTelemetry pipeline.
@@ -69,7 +74,7 @@ func newResource(serviceName string) (*resource.Resource, error) {
 		))
 }
 
-func newTraceProvider(ctx context.Context, res *resource.Resource) (*trace.TracerProvider, error) {
+func newTraceProvider(ctx context.Context, res *resource.Resource) (*sdktrace.TracerProvider, error) {
 
 	traceExporter, err := otlptracegrpc.New(ctx,
 		otlptracegrpc.WithEndpoint(os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT")), otlptracegrpc.WithInsecure())
@@ -77,13 +82,22 @@ func newTraceProvider(ctx context.Context, res *resource.Resource) (*trace.Trace
 		return nil, err
 	}
 
-	traceProvider := trace.NewTracerProvider(
-		trace.WithBatcher(traceExporter,
+	traceProvider := sdktrace.NewTracerProvider(
+		sdktrace.WithBatcher(traceExporter,
 			// Default is 5s. Set to 1s for demonstrative purposes.
-			trace.WithBatchTimeout(time.Second)),
+			sdktrace.WithBatchTimeout(time.Second)),
 		// ),
-		trace.WithResource(res),
-		trace.WithIDGenerator(xray.NewIDGenerator()),
+		sdktrace.WithResource(res),
+		sdktrace.WithIDGenerator(xray.NewIDGenerator()),
 	)
 	return traceProvider, nil
+}
+
+func OtelLoggingMiddleware(next http.Handler) http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        traceId := trace.SpanFromContext(r.Context()).SpanContext().TraceID().String()
+		ctx := context.WithValue(r.Context(), request.RequestIdKey, traceId)
+        newReq := r.WithContext(ctx)
+        next.ServeHTTP(w, newReq)
+    })
 }
