@@ -9,8 +9,8 @@ image_resource:
     tag: 1.19.2
 
 inputs:
-  - name: log.go
-    path: log.go
+  - name: dp-otel-go
+    path: dp-otel-go
 
 run:
-  path: log.go/ci/scripts/build.sh
+  path: dp-otel-go/ci/scripts/build.sh
