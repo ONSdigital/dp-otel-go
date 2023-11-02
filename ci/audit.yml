@@ -8,8 +8,8 @@ image_resource:
     tag: latest
 
 inputs:
-  - name: log.go
-    path: log.go
+  - name: dp-otel-go
+    path: dp-otel-go
 
 run:
-  path: log.go/ci/scripts/audit.sh
+  path: dp-otel-go/ci/scripts/audit.sh

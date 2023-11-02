@@ -2,6 +2,6 @@
 
 cwd=$(pwd)
 
-pushd $cwd/log.go
+pushd $cwd/otel.go
   make test
 popd
