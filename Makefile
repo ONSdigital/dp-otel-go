@@ -15,16 +15,10 @@ audit:
 
 .PHONY: build
 build: 
-	go build -tags 'production' -o $(BINPATH)/dp-otel-go -ldflags="-X 'main.BuildTime=$(BUILD_TIME)' -X 'main.GitCommit=$(GIT_COMMIT)' -X 'main.Version=$(VERSION)'"
-
-.PHONY: debug
-debug:
-	go build -tags 'debug' -race -o $(BINPATH)/dp-otel-go -ldflags "-X main.BuildTime=$(BUILD_TIME) -X main.GitCommit=$(GIT_COMMIT) -X main.Version=$(VERSION)"
+	go build ./...
 
 .PHONY: test
 test: 
-	go test -race -cover -tags 'production' ./...
-
-
+	go test -race -cover 
 
 

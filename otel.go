@@ -3,8 +3,6 @@ package dpotelgo
 import (
 	"context"
 	"errors"
-	"os"
-	"time"
 
 	"net/http"
 
@@ -22,10 +20,10 @@ import (
 
 // setupOTelSDK bootstraps the OpenTelemetry pipeline.
 // If it does not return an error, make sure to call shutdown for proper cleanup.
-func SetupOTelSDK(ctx context.Context) (shutdown func(context.Context) error, err error) {
+func SetupOTelSDK(ctx context.Context, cfg Config) (shutdown func(context.Context) error, err error) {
 	var shutdownFuncs []func(context.Context) error
 
-	serviceName := Config.otel_service_name
+	serviceName := cfg.otel_service_name
 
 	// shutdown calls cleanup functions registered via shutdownFuncs.
 	// The errors from the calls are joined.
@@ -52,7 +50,7 @@ func SetupOTelSDK(ctx context.Context) (shutdown func(context.Context) error, er
 	}
 
 	// Setup trace provider.
-	tracerProvider, err := newTraceProvider(ctx, res)
+	tracerProvider, err := newTraceProvider(ctx, res, cfg)
 	if err != nil {
 		handleErr(err)
 		return
@@ -74,10 +72,10 @@ func newResource(serviceName string) (*resource.Resource, error) {
 		))
 }
 
-func newTraceProvider(ctx context.Context, res *resource.Resource) (*sdktrace.TracerProvider, error) {
+func newTraceProvider(ctx context.Context, res *resource.Resource, cfg Config) (*sdktrace.TracerProvider, error) {
 
 	traceExporter, err := otlptracegrpc.New(ctx,
-		otlptracegrpc.WithEndpoint(Config.otel_exporter_otlp_endpoint), otlptracegrpc.WithInsecure())
+		otlptracegrpc.WithEndpoint(cfg.otel_exporter_otlp_endpoint), otlptracegrpc.WithInsecure())
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +83,7 @@ func newTraceProvider(ctx context.Context, res *resource.Resource) (*sdktrace.Tr
 	traceProvider := sdktrace.NewTracerProvider(
 		sdktrace.WithBatcher(traceExporter,
 			// Default is 5s. Set to 1s for demonstrative purposes.
-			sdktrace.WithBatchTimeout(Config.otel_batch_timeout)),
+			sdktrace.WithBatchTimeout(cfg.otel_batch_timeout)),
 		// ),
 		sdktrace.WithResource(res),
 		sdktrace.WithIDGenerator(xray.NewIDGenerator()),
