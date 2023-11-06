@@ -1,0 +1,16 @@
+---
+
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: golang
+    tag: latest
+
+inputs:
+  - name: dp-otel-go
+    path: dp-otel-go
+
+run:
+  path: dp-otel-go/ci/scripts/unit.sh
