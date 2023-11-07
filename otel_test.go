@@ -7,9 +7,9 @@ import "time"
 func TestSetup(t *testing.T){
 
 	var cfg Config
-	cfg.otelServiceName="testservice"
-	cfg.otelBatchTimeout=time.Second
-	cfg.otelExporterOtlpEndpoint="localhost:4317"
+	cfg.OtelServiceName="testservice"
+	cfg.OtelBatchTimeout=time.Second
+	cfg.OtelExporterOtlpEndpoint="localhost:4317"
 
 	shutdown, err := SetupOTelSDK(context.Background(), cfg)
 

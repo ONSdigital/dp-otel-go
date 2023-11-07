@@ -23,7 +23,7 @@ import (
 func SetupOTelSDK(ctx context.Context, cfg Config) (shutdown func(context.Context) error, err error) {
 	var shutdownFuncs []func(context.Context) error
 
-	serviceName := cfg.otelServiceName
+	serviceName := cfg.OtelServiceName
 
 	// shutdown calls cleanup functions registered via shutdownFuncs.
 	// The errors from the calls are joined.
@@ -75,7 +75,7 @@ func newResource(serviceName string) (*resource.Resource, error) {
 func newTraceProvider(ctx context.Context, res *resource.Resource, cfg Config) (*sdktrace.TracerProvider, error) {
 
 	traceExporter, err := otlptracegrpc.New(ctx,
-		otlptracegrpc.WithEndpoint(cfg.otelExporterOtlpEndpoint), otlptracegrpc.WithInsecure())
+		otlptracegrpc.WithEndpoint(cfg.OtelExporterOtlpEndpoint), otlptracegrpc.WithInsecure())
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +83,7 @@ func newTraceProvider(ctx context.Context, res *resource.Resource, cfg Config) (
 	traceProvider := sdktrace.NewTracerProvider(
 		sdktrace.WithBatcher(traceExporter,
 			// Default is 5s. Set to 1s for demonstrative purposes.
-			sdktrace.WithBatchTimeout(cfg.otelBatchTimeout)),
+			sdktrace.WithBatchTimeout(cfg.OtelBatchTimeout)),
 		// ),
 		sdktrace.WithResource(res),
 		sdktrace.WithIDGenerator(xray.NewIDGenerator()),
