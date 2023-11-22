@@ -90,12 +90,3 @@ func newTraceProvider(ctx context.Context, res *resource.Resource, cfg Config) (
 	)
 	return traceProvider, nil
 }
-
-func OtelLoggingMiddleware(next http.Handler) http.Handler {
-    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-        traceId := trace.SpanFromContext(r.Context()).SpanContext().TraceID().String()
-		ctx := context.WithValue(r.Context(), request.RequestIdKey, traceId)
-        newReq := r.WithContext(ctx)
-        next.ServeHTTP(w, newReq)
-    })
-}
