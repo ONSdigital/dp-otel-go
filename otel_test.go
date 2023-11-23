@@ -1,23 +1,25 @@
 package dpotelgo
 
-import "testing"
-import "context"
-import "time"
+import (
+	"context"
+	"testing"
+	"time"
+)
 
-func TestSetup(t *testing.T){
+func TestSetup(t *testing.T) {
 
 	var cfg Config
-	cfg.OtelServiceName="testservice"
-	cfg.OtelBatchTimeout=time.Second
-	cfg.OtelExporterOtlpEndpoint="localhost:4317"
+	cfg.OtelServiceName = "testservice"
+	cfg.OtelBatchTimeout = time.Second
+	cfg.OtelExporterOtlpEndpoint = "localhost:4317"
 
 	shutdown, err := SetupOTelSDK(context.Background(), cfg)
 
-	if (shutdown==nil) {
+	if shutdown == nil {
 		t.Errorf("shutdown callback is null")
 	}
-	if (err != nil){
-		t.Errorf("err is not null %s",err)
+	if err != nil {
+		t.Errorf("err is not null %s", err)
 	}
 
 }

@@ -4,18 +4,13 @@ import (
 	"context"
 	"errors"
 
-	"net/http"
-
 	"go.opentelemetry.io/contrib/propagators/autoprop"
+	"go.opentelemetry.io/contrib/propagators/aws/xray"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/sdk/resource"
-	"go.opentelemetry.io/otel/trace"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
-	"go.opentelemetry.io/contrib/propagators/aws/xray"
-	"github.com/ONSdigital/dp-net/v2/request"
-	
 )
 
 // setupOTelSDK bootstraps the OpenTelemetry pipeline.
@@ -62,8 +57,7 @@ func SetupOTelSDK(ctx context.Context, cfg Config) (shutdown func(context.Contex
 	return
 }
 
-
-//TODO this is the place to pass extra information back to the tracing tool. Implement a mechanism
+// TODO this is the place to pass extra information back to the tracing tool. Implement a mechanism
 // to pass arbitrary information from the service, also identify any AWS info to pass back (ec2 etc)
 func newResource(serviceName string) (*resource.Resource, error) {
 	return resource.Merge(resource.Default(),
