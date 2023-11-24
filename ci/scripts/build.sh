@@ -2,6 +2,6 @@
 
 cwd=$(pwd)
 
-pushd $cwd/otel.go
+pushd $cwd/dp-otel-go
   make build
 popd
